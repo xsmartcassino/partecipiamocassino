@@ -1,19 +1,10 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Funzione sicura per recuperare la chiave API senza mandare in crash l'app
-const safeGetApiKey = () => {
-  try {
-    // @ts-ignore
-    return (typeof process !== 'undefined' && process.env && process.env.API_KEY) ? process.env.API_KEY : "";
-  } catch (e) {
-    return "";
-  }
-};
+const API_KEY = process.env.API_KEY || "";
 
 export const generateChristmasGreeting = async (): Promise<{ title: string; message: string }> => {
-  const apiKey = safeGetApiKey();
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
   
   try {
     const response = await ai.models.generateContent({
