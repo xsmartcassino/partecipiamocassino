@@ -2,42 +2,35 @@
 import React, { useState, useEffect } from 'react';
 
 const Hero: React.FC = () => {
-  // L'URL fornito dall'utente è la visualizzazione HTML di GitHub. 
-  // Per caricarlo in un tag <img> serve l'URL "raw".
-  const githubRawUrl = "https://raw.githubusercontent.com/xsmartcassino/partecipiamocassino/main/foto-gruppo.jpg";
+  // URLs per testare diverse varianti (GitHub distingue tra .jpg e .JPG)
+  const baseUrl = "https://raw.githubusercontent.com/xsmartcassino/partecipiamocassino/main/foto-gruppo";
+  const variants = [".jpg", ".JPG", ".jpeg", ".png"];
 
-  // Lista di backup e varianti nel caso l'URL diretto fallisca o servano varianti locali
-  const possibleImages = [
-    githubRawUrl,
-    "foto-gruppo.jpg",
-    "foto-gruppo.JPG",
-    "foto-gruppo.png",
-    "foto_gruppo.jpg"
-  ];
+  const [currentVariant, setCurrentVariant] = useState(0);
+  const [imgSrc, setImgSrc] = useState(`${baseUrl}${variants[0]}?t=${new Date().getTime()}`);
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
-  const [imageIndex, setImageIndex] = useState(0);
-  const [imgSrc, setImgSrc] = useState(possibleImages[0]);
-  const [hasFailedAll, setHasFailedAll] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const handleLoad = () => {
+    console.log("✅ Foto di gruppo caricata con successo:", imgSrc);
+    setStatus('success');
+  };
 
-  const handleImageError = () => {
-    if (imageIndex < possibleImages.length - 1) {
-      const nextIndex = imageIndex + 1;
-      setImageIndex(nextIndex);
-      setImgSrc(possibleImages[nextIndex]);
+  const handleError = () => {
+    console.warn("⚠️ Fallito caricamento variante:", variants[currentVariant]);
+    if (currentVariant < variants.length - 1) {
+      const next = currentVariant + 1;
+      setCurrentVariant(next);
+      setImgSrc(`${baseUrl}${variants[next]}?t=${new Date().getTime()}`);
     } else {
-      // Se falliscono tutti i tentativi, usiamo l'immagine di backup natalizia standard
-      setHasFailedAll(true);
-      setImgSrc("https://images.unsplash.com/photo-1543589077-47d81606c1ad?auto=format&fit=crop&q=80&w=1000");
+      console.error("❌ Tutte le varianti dell'immagine hanno fallito il caricamento.");
+      setStatus('error');
     }
   };
 
   const manualRetry = () => {
-    setHasFailedAll(false);
-    setImageIndex(0);
-    setRetryCount(prev => prev + 1);
-    // Aggiungiamo un parametro casuale per forzare il refresh della cache
-    setImgSrc(`${githubRawUrl}?v=${retryCount + 1}`);
+    setCurrentVariant(0);
+    setStatus('loading');
+    setImgSrc(`${baseUrl}${variants[0]}?refresh=${new Date().getTime()}`);
   };
 
   return (
@@ -58,8 +51,8 @@ const Hero: React.FC = () => {
               Insieme per rendere la nostra città un posto migliore. Questo Natale, vogliamo condividere con voi la gioia dell'impegno civile e della comunità.
             </p>
             <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
-              <a href="#attivita" className="bg-red-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-red-700 transition-all shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2">
-                <span>Le nostre Iniziative</span>
+              <a href="#attivita" className="bg-red-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-red-700 transition-all shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2 text-center">
+                <span>Iniziative</span>
                 <span>🎁</span>
               </a>
               <a href="#chi-siamo" className="bg-white text-slate-800 border-2 border-slate-200 px-10 py-5 rounded-2xl font-bold text-xl hover:border-green-600 hover:text-green-700 transition-all shadow-md flex items-center justify-center">
@@ -72,24 +65,32 @@ const Hero: React.FC = () => {
             <div className="absolute -inset-6 bg-gradient-to-tr from-red-600 via-green-500 to-red-600 rounded-[3rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
             
             <div className="relative bg-white p-4 pb-16 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] transform -rotate-2 hover:rotate-0 transition-all duration-500 border border-slate-100">
-                <div className="overflow-hidden rounded-lg aspect-[4/3] bg-slate-200 flex items-center justify-center relative">
+                <div className="overflow-hidden rounded-lg aspect-[4/3] bg-slate-100 flex items-center justify-center relative">
+                    
+                    {status === 'loading' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-20">
+                        <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-slate-400 font-medium">Cerco la tua foto...</p>
+                      </div>
+                    )}
+
                     <img 
-                      src={imgSrc} 
-                      alt="Partecipiamo Cassino - Foto di Gruppo" 
-                      className="w-full h-full object-cover transform transition-transform duration-1000 group-hover:scale-110"
-                      onError={handleImageError}
+                      src={status === 'error' ? "https://images.unsplash.com/photo-1543589077-47d81606c1ad?auto=format&fit=crop&q=80&w=1000" : imgSrc} 
+                      alt="Partecipiamo Cassino" 
+                      className={`w-full h-full object-cover transition-all duration-700 ${status === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                      onLoad={handleLoad}
+                      onError={handleError}
                     />
                     
-                    {hasFailedAll && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white text-center p-6 backdrop-blur-sm">
-                        <p className="font-bold mb-4 leading-tight">
-                          Impossibile caricare la foto da GitHub. 📸
-                        </p>
+                    {status === 'error' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white text-center p-6 backdrop-blur-sm z-30">
+                        <p className="font-bold mb-2">Foto non trovata su GitHub 📸</p>
+                        <p className="text-[10px] mb-4 opacity-80">Assicurati che il repository sia PUBBLICO e il file si chiami esattamente 'foto-gruppo.jpg'</p>
                         <button 
                           onClick={manualRetry}
-                          className="bg-white text-red-600 px-4 py-2 rounded-lg text-xs font-bold shadow-lg hover:bg-red-50 transition-colors"
+                          className="bg-white text-red-600 px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-red-50"
                         >
-                          🔄 FORZA CARICAMENTO
+                          🔄 RIPROVA ORA
                         </button>
                       </div>
                     )}
@@ -106,9 +107,9 @@ const Hero: React.FC = () => {
                 <div className="absolute bottom-12 left-8 text-xl animate-bounce">⭐</div>
             </div>
             
-            <div className="absolute -bottom-8 -right-8 bg-green-700 text-white p-6 rounded-full shadow-2xl transform rotate-12 flex flex-col items-center justify-center w-32 h-32 border-4 border-white">
+            <div className="absolute -bottom-8 -right-8 bg-green-700 text-white p-6 rounded-full shadow-2xl transform rotate-12 flex flex-col items-center justify-center w-32 h-32 border-4 border-white z-20">
                 <span className="text-3xl">🎅</span>
-                <span className="font-bold text-[10px] uppercase text-center mt-1 leading-tight">Auguri Civici</span>
+                <span className="font-bold text-[10px] uppercase text-center mt-1">Buone Feste</span>
             </div>
           </div>
         </div>
