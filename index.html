@@ -4,41 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partecipiamo Cassino - Home Natale</title>
+    <title>Partecipiamo Cassino - Natale</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    
+    <script>
+        // SHIM per ambiente browser più robusto
+        window.process = { 
+            env: { API_KEY: "" },
+            cwd: function() { return '/'; },
+            nextTick: function(fn) { setTimeout(fn, 0); }
+        };
+        
+        // Logger per catturare errori prima ancora che React parta
+        window.logError = function(message, source) {
+            const debugDiv = document.getElementById('debug-console');
+            if (debugDiv) {
+                debugDiv.style.display = 'block';
+                const p = document.createElement('p');
+                p.style.marginBottom = '8px';
+                p.style.padding = '10px';
+                p.style.background = 'rgba(255,0,0,0.1)';
+                p.style.borderRadius = '4px';
+                p.innerHTML = `<strong>[${source}]</strong>: ${message}`;
+                debugDiv.appendChild(p);
+            }
+            console.error(`[${source}] ${message}`);
+        };
+
+        window.onerror = function(msg, url, line) {
+            window.logError(msg, 'Runtime Error');
+            return false;
+        };
+    </script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
-        }
-        .font-festive {
-            font-family: 'Mountains of Christmas', cursive;
-        }
-        .font-serif-elegant {
-            font-family: 'Playfair Display', serif;
-        }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        .font-festive { font-family: 'Mountains of Christmas', cursive; }
+        .font-serif-elegant { font-family: 'Playfair Display', serif; }
         @keyframes snowfall {
             0% { transform: translateY(-10vh) translateX(0); }
             100% { transform: translateY(110vh) translateX(20px); }
         }
-        .snowflake {
+        .snowflake { position: fixed; top: -10%; color: white; user-select: none; z-index: 1000; pointer-events: none; animation: snowfall linear infinite; }
+        
+        #debug-console {
+            display: none;
             position: fixed;
-            top: -10%;
-            color: white;
-            user-select: none;
-            z-index: 1000;
-            pointer-events: none;
-            animation: snowfall linear infinite;
+            bottom: 0; left: 0; width: 100%;
+            max-height: 40vh;
+            background: #1a1a1a;
+            color: #ff5555;
+            font-family: monospace;
+            padding: 20px;
+            z-index: 10000;
+            overflow-y: auto;
+            border-top: 4px solid #ff0000;
+            font-size: 13px;
         }
-        #root {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+
+        /* Effetto scorrimento fluido */
+        html { scroll-behavior: smooth; }
     </style>
+
     <script type="importmap">
 {
   "imports": {
@@ -51,14 +84,36 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-slate-50">
-    <!-- Contenitore principale dove viene iniettato React -->
-    <div id="root"></div>
+    <!-- Console di debug (appare solo in caso di errore) -->
+    <div id="debug-console">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+            <h3 style="color: white; margin: 0;">⚠️ Pannello di Controllo Errori</h3>
+            <button onclick="location.reload()" style="background: #444; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Ricarica Pagina</button>
+        </div>
+        <p style="color: #aaa; margin-bottom: 15px;">Se vedi errori qui sotto, verifica che i file .tsx siano stati caricati correttamente sul tuo server/hosting.</p>
+    </div>
 
-    <!-- QUESTA È LA RIGA DA AGGIUNGERE: Carica il modulo principale dell'app -->
-    <script type="module" src="./index.tsx"></script>
-<script type="module" src="/index.tsx"></script>
+    <div id="root">
+        <!-- Loader iniziale più curato -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff;">
+            <div style="font-size: 60px; margin-bottom: 20px; animation: bounce 2s infinite;">🎄</div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold; color: #dc2626;">Partecipiamo Cassino</div>
+            <div style="font-family: sans-serif; font-size: 14px; color: #666; margin-top: 10px;">Inizializzando l'atmosfera natalizia...</div>
+            <style>
+                @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+            </style>
+        </div>
+    </div>
+
+    <!-- Il file index.tsx viene caricato come modulo Babel -->
+    <script 
+        type="text/babel" 
+        data-presets="react,typescript" 
+        data-type="module" 
+        src="./index.tsx"
+        onerror="window.logError('Errore critico: Impossibile caricare index.tsx. Controlla che il file sia presente nella stessa cartella dell\'index.html e che il server non blocchi i file .tsx', 'Loader')"
+    ></script>
 </body>
 </html>

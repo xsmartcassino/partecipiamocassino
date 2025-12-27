@@ -6,6 +6,7 @@ import Snowfall from './components/Snowfall.tsx';
 import GreetingCard from './components/GreetingCard.tsx';
 import AboutSection from './components/AboutSection.tsx';
 import Footer from './components/Footer.tsx';
+import ChatBot from './components/ChatBot.tsx';
 
 const App: React.FC = () => {
   return (
@@ -49,6 +50,9 @@ const App: React.FC = () => {
       </main>
       
       <Footer />
+
+      {/* Chatbot Natalizio */}
+      <ChatBot />
     </div>
   );
 };

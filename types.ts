@@ -16,3 +16,8 @@ export interface ChristmasGreeting {
   title: string;
   message: string;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
